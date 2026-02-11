@@ -9,10 +9,13 @@ let isLoading = false;
 
 const MAX_SQUAD_SIZE = 26;
 const MAX_GOALKEEPERS = 3;
+const MAX_OUTFIELD_PLAYERS = 23; // DEF + MID + FWD
 
 // DOM Elements
 const availablePlayersContainer = document.getElementById('available-players');
 const squadCountElement = document.getElementById('squad-count');
+const gkCountElement = document.getElementById('gk-count');
+const outfieldCountElement = document.getElementById('outfield-count');
 const countrySelect = document.getElementById('country');
 const filterButtons = document.querySelectorAll('.filter-btn');
 const clearSquadBtn = document.getElementById('clear-squad');
@@ -155,18 +158,27 @@ function togglePlayer(playerId) {
         selectedPlayers = selectedPlayers.filter(p => p.id !== playerId);
     } else {
         // Add player - check limits
-        if (selectedPlayers.length >= MAX_SQUAD_SIZE) {
-            showToast('Squad is full! (26 players max)', true);
-            return;
-        }
+        const gkCount = selectedPlayers.filter(p => p.position === 'GK').length;
+        const outfieldCount = selectedPlayers.filter(p => p.position !== 'GK').length;
 
-        // Solo los porteros tienen límite (3 máximo)
         if (player.position === 'GK') {
-            const gkCount = selectedPlayers.filter(p => p.position === 'GK').length;
+            // Verificar límite de porteros (máx 3)
             if (gkCount >= MAX_GOALKEEPERS) {
-                showToast(`Maximum ${MAX_GOALKEEPERS} goalkeepers allowed!`, true);
+                showToast(`Máximo ${MAX_GOALKEEPERS} porteros permitidos!`, true);
                 return;
             }
+        } else {
+            // Verificar límite de jugadores de campo (máx 23)
+            if (outfieldCount >= MAX_OUTFIELD_PLAYERS) {
+                showToast(`Máximo ${MAX_OUTFIELD_PLAYERS} jugadores de campo permitidos!`, true);
+                return;
+            }
+        }
+
+        // Verificar que no se exceda el total
+        if (selectedPlayers.length >= MAX_SQUAD_SIZE) {
+            showToast('Plantilla completa (26 jugadores)', true);
+            return;
         }
 
         selectedPlayers.push(player);
@@ -178,8 +190,13 @@ function togglePlayer(playerId) {
 
 // Render the selected squad
 function renderSquad() {
-    // Update squad count
+    // Update squad counts
+    const gkCount = selectedPlayers.filter(p => p.position === 'GK').length;
+    const outfieldCount = selectedPlayers.filter(p => p.position !== 'GK').length;
+    
     squadCountElement.textContent = selectedPlayers.length;
+    gkCountElement.textContent = gkCount;
+    outfieldCountElement.textContent = outfieldCount;
 
     // Render each position group
     const positions = ['GK', 'DEF', 'MID', 'FWD'];
