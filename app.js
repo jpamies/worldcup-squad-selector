@@ -92,6 +92,8 @@ function renderCountryInfo() {
 
 // Initialize the app
 async function init() {
+    // Esperar a que se carguen los badges
+    await waitForBadges();
     await loadCountryData(currentCountry);
     renderCountryInfo();
     loadSavedSquad();
