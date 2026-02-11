@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup 2026 Squad Selector</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 World Cup 2026</h1>
+            <h2>Squad Selector</h2>
+        </header>
+
+        <div class="country-selector">
+            <label for="country">Select Country:</label>
+            <select id="country">
+                <option value="spain" selected>🇪🇸 Spain</option>
+            </select>
+        </div>
+
+        <div class="squad-info">
+            <span id="squad-count">0</span>/26 players selected
+        </div>
+
+        <main class="squad-builder">
+            <section class="player-pool">
+                <h3>Available Players</h3>
+                <div class="position-filter">
+                    <button class="filter-btn active" data-position="all">All</button>
+                    <button class="filter-btn" data-position="GK">GK</button>
+                    <button class="filter-btn" data-position="DEF">DEF</button>
+                    <button class="filter-btn" data-position="MID">MID</button>
+                    <button class="filter-btn" data-position="FWD">FWD</button>
+                </div>
+                <div id="available-players" class="players-grid"></div>
+            </section>
+
+            <section class="selected-squad">
+                <h3>Your Squad</h3>
+                <div class="squad-positions">
+                    <div class="position-group">
+                        <h4>Goalkeepers (max 3)</h4>
+                        <div id="squad-gk" class="squad-list" data-position="GK"></div>
+                    </div>
+                    <div class="position-group">
+                        <h4>Defenders</h4>
+                        <div id="squad-def" class="squad-list" data-position="DEF"></div>
+                    </div>
+                    <div class="position-group">
+                        <h4>Midfielders</h4>
+                        <div id="squad-mid" class="squad-list" data-position="MID"></div>
+                    </div>
+                    <div class="position-group">
+                        <h4>Forwards</h4>
+                        <div id="squad-fwd" class="squad-list" data-position="FWD"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div class="actions">
+            <button id="clear-squad" class="btn btn-secondary">Clear Squad</button>
+            <button id="save-squad" class="btn btn-primary">Save Squad</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
