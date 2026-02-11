@@ -203,11 +203,21 @@ header h2 {
     border-color: #ffd700;
 }
 
-/* Club flag */
-.club-flag {
-    font-size: 1.4rem;
+/* Club badge */
+.club-badge {
     width: 28px;
-    text-align: center;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.badge-placeholder {
+    font-size: 1.3rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
 }
 
@@ -334,8 +344,15 @@ header h2 {
     transition: all 0.3s ease;
 }
 
-.squad-player .club-flag {
-    font-size: 1rem;
+.squad-player .club-badge {
+    width: 18px;
+    height: 18px;
+}
+
+.squad-player .badge-placeholder {
+    font-size: 0.9rem;
+    width: 18px;
+    height: 18px;
 }
 
 .squad-player:hover {
