@@ -14,8 +14,7 @@ const MAX_OUTFIELD_PLAYERS = 23; // DEF + MID + FWD
 // DOM Elements
 const availablePlayersContainer = document.getElementById('available-players');
 const squadCountElement = document.getElementById('squad-count');
-const gkCountElement = document.getElementById('gk-count');
-const outfieldCountElement = document.getElementById('outfield-count');
+const countryInfoElement = document.getElementById('country-info');
 const countrySelect = document.getElementById('country');
 const filterButtons = document.querySelectorAll('.filter-btn');
 const clearSquadBtn = document.getElementById('clear-squad');
@@ -67,9 +66,34 @@ function formatMarketValue(value) {
     return `€${value}`;
 }
 
+// Render country info section
+function renderCountryInfo() {
+    const countryData = playersData[currentCountry];
+    if (!countryData || !countryData.country) {
+        countryInfoElement.innerHTML = '';
+        return;
+    }
+    
+    const country = countryData.country;
+    const totalPlayers = countryData.players ? countryData.players.length : 0;
+    
+    countryInfoElement.innerHTML = `
+        <div class="country-flag">${country.flag}</div>
+        <div class="country-details">
+            <h2>${country.nameLocal || country.name}</h2>
+            <div class="country-meta">
+                <span>🏆 FIFA Ranking: #${country.fifaRanking}</span>
+                <span>👔 Seleccionador: ${country.coachName}</span>
+                <span>⚽ ${totalPlayers} jugadores disponibles</span>
+            </div>
+        </div>
+    `;
+}
+
 // Initialize the app
 async function init() {
     await loadCountryData(currentCountry);
+    renderCountryInfo();
     loadSavedSquad();
     renderAvailablePlayers();
     renderSquad();
@@ -93,6 +117,7 @@ function setupEventListeners() {
         currentCountry = e.target.value;
         selectedPlayers = [];
         await loadCountryData(currentCountry);
+        renderCountryInfo();
         loadSavedSquad();
         renderAvailablePlayers();
         renderSquad();
@@ -190,13 +215,8 @@ function togglePlayer(playerId) {
 
 // Render the selected squad
 function renderSquad() {
-    // Update squad counts
-    const gkCount = selectedPlayers.filter(p => p.position === 'GK').length;
-    const outfieldCount = selectedPlayers.filter(p => p.position !== 'GK').length;
-    
+    // Update squad count
     squadCountElement.textContent = selectedPlayers.length;
-    gkCountElement.textContent = gkCount;
-    outfieldCountElement.textContent = outfieldCount;
 
     // Render each position group
     const positions = ['GK', 'DEF', 'MID', 'FWD'];
