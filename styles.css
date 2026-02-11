@@ -411,6 +411,16 @@ header h2 {
     color: #1a1a2e;
 }
 
+.btn-share {
+    background: linear-gradient(135deg, #64ffda, #00bcd4);
+    color: #1a1a2e;
+}
+
+.btn-share:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(100, 255, 218, 0.3);
+}
+
 /* Toast notification */
 .toast {
     position: fixed;

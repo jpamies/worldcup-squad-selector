@@ -94,9 +94,16 @@ function renderCountryInfo() {
 async function init() {
     // Esperar a que se carguen los badges
     await waitForBadges();
-    await loadCountryData(currentCountry);
+    
+    // Check if loading from shared URL
+    const loadedFromURL = await loadFromURL();
+    
+    if (!loadedFromURL) {
+        await loadCountryData(currentCountry);
+        loadSavedSquad();
+    }
+    
     renderCountryInfo();
-    loadSavedSquad();
     renderAvailablePlayers();
     renderSquad();
     setupEventListeners();
@@ -132,6 +139,9 @@ function setupEventListeners() {
         renderSquad();
         showToast('Squad cleared!');
     });
+
+    // Share squad button
+    document.getElementById('share-squad').addEventListener('click', shareSquad);
 
     // Save squad button
     saveSquadBtn.addEventListener('click', saveSquad);
@@ -267,6 +277,83 @@ function loadSavedSquad() {
     if (saved) {
         const data = JSON.parse(saved);
         selectedPlayers = data.players || [];
+    }
+}
+
+// Generate shareable URL with squad encoded in base64
+function generateShareURL() {
+    if (selectedPlayers.length === 0) {
+        showToast('Selecciona jugadores primero', true);
+        return null;
+    }
+    
+    // Compact format: country code + player IDs only
+    const shareData = {
+        c: currentCountry,
+        p: selectedPlayers.map(p => p.id)
+    };
+    
+    const encoded = btoa(JSON.stringify(shareData));
+    const url = `${window.location.origin}${window.location.pathname}?squad=${encoded}`;
+    return url;
+}
+
+// Share squad - copy URL to clipboard
+async function shareSquad() {
+    const url = generateShareURL();
+    if (!url) return;
+    
+    try {
+        await navigator.clipboard.writeText(url);
+        showToast(`¡URL copiada! (${selectedPlayers.length} jugadores)`);
+    } catch (err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast(`¡URL copiada! (${selectedPlayers.length} jugadores)`);
+    }
+}
+
+// Load squad from URL parameter
+async function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const squadParam = params.get('squad');
+    
+    if (!squadParam) return false;
+    
+    try {
+        const decoded = JSON.parse(atob(squadParam));
+        const country = decoded.c;
+        const playerIds = decoded.p;
+        
+        if (!country || !playerIds || !Array.isArray(playerIds)) {
+            throw new Error('Invalid squad data');
+        }
+        
+        // Set country and load data
+        currentCountry = country;
+        document.getElementById('country').value = country;
+        await loadCountryData(country);
+        
+        // Find players by ID
+        const countryData = playersData[country];
+        if (countryData && countryData.players) {
+            selectedPlayers = countryData.players.filter(p => playerIds.includes(p.id));
+        }
+        
+        // Clear URL parameter to avoid reload issues
+        window.history.replaceState({}, '', window.location.pathname);
+        
+        showToast(`¡Selección cargada! (${selectedPlayers.length} jugadores)`);
+        return true;
+    } catch (error) {
+        console.error('Error loading squad from URL:', error);
+        showToast('Error al cargar selección compartida', true);
+        return false;
     }
 }
 
