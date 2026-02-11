@@ -224,7 +224,15 @@ function renderSquad() {
     const positions = ['GK', 'DEF', 'MID', 'FWD'];
     positions.forEach(pos => {
         const container = document.getElementById(`squad-${pos.toLowerCase()}`);
+        const countElement = document.getElementById(`count-${pos.toLowerCase()}`);
         const positionPlayers = selectedPlayers.filter(p => p.position === pos);
+        
+        // Update counter
+        if (pos === 'GK') {
+            countElement.textContent = `(${positionPlayers.length}/${MAX_GOALKEEPERS})`;
+        } else {
+            countElement.textContent = `(${positionPlayers.length})`;
+        }
         
         container.innerHTML = positionPlayers.map(player => `
             <div class="squad-player" onclick="togglePlayer(${player.id})">

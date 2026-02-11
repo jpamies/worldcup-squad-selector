@@ -320,6 +320,12 @@ header h2 {
     letter-spacing: 1px;
 }
 
+.position-count {
+    color: #64ffda;
+    font-weight: bold;
+    text-transform: none;
+}
+
 .squad-list {
     min-height: 40px;
     background: rgba(0, 0, 0, 0.2);
