@@ -126,18 +126,16 @@ function renderAvailablePlayers() {
             <div class="player-card ${isSelected ? 'selected' : ''}" 
                  data-id="${player.id}" 
                  onclick="togglePlayer(${player.id})">
-                <div class="player-header">
-                    <div class="name">${player.name}</div>
-                    <span class="age">${player.age} years</span>
+                ${renderClubBadge(player.club)}
+                <div class="player-main">
+                    <span class="name">${player.name}</span>
+                    <span class="club-name">${player.club}</span>
                 </div>
-                <div class="club-info">${player.club}</div>
-                <div class="info">
+                <div class="player-stats">
                     <span class="position">${player.position}</span>
+                    <span class="age">${player.age} años</span>
                     <span class="market-value">${formatMarketValue(player.marketValue)}</span>
-                </div>
-                <div class="stats">
-                    <span class="caps" title="International caps">${player.caps} caps</span>
-                    <span class="goals" title="International goals">${player.goals} goals</span>
+                    <span class="add-btn">${isSelected ? '✓' : '+'}</span>
                 </div>
             </div>
         `;
@@ -191,6 +189,7 @@ function renderSquad() {
         
         container.innerHTML = positionPlayers.map(player => `
             <div class="squad-player" onclick="togglePlayer(${player.id})">
+                ${renderClubBadge(player.club)}
                 <span>${player.name}</span>
                 <span class="remove">×</span>
             </div>

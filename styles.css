@@ -121,9 +121,9 @@ header h2 {
 }
 
 .players-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     max-height: 500px;
     overflow-y: auto;
     padding-right: 10px;
@@ -145,17 +145,20 @@ header h2 {
 
 .player-card {
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 10px 14px;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .player-card:hover {
-    transform: translateY(-3px);
     border-color: #ffd700;
-    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.2);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .player-card.selected {
@@ -163,65 +166,99 @@ header h2 {
     border-color: #ffd700;
 }
 
-.player-card .player-header {
+/* Club badge */
+.club-badge {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.badge-fallback {
+    font-size: 1.4rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.player-card .player-main {
+    flex: 1;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    gap: 10px;
+    min-width: 0;
 }
 
 .player-card .name {
     font-weight: 600;
     font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 120px;
+}
+
+.player-card .club-name {
+    font-size: 0.8rem;
+    color: #a0a8c0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.player-card .player-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .player-card .age {
     font-size: 0.75rem;
     color: #8892b0;
     background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
+    padding: 2px 8px;
     border-radius: 8px;
-}
-
-.player-card .club-info {
-    font-size: 0.8rem;
-    color: #a0a8c0;
-    margin-bottom: 8px;
-}
-
-.player-card .info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #8892b0;
-    margin-bottom: 6px;
+    white-space: nowrap;
 }
 
 .player-card .position {
     background: rgba(255, 215, 0, 0.2);
     color: #ffd700;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 10px;
     font-weight: 500;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .player-card .market-value {
     color: #4ade80;
     font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
-.player-card .stats {
-    display: flex;
-    gap: 12px;
-    font-size: 0.75rem;
-    color: #6b7280;
-}
-
-.player-card .stats .caps,
-.player-card .stats .goals {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2px 6px;
+.player-card .add-btn {
+    background: rgba(255, 215, 0, 0.2);
+    border: none;
+    color: #ffd700;
+    padding: 4px 10px;
     border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.player-card .add-btn:hover {
+    background: #ffd700;
+    color: #1a1a2e;
+}
+
+.player-card.selected .add-btn {
+    background: #ffd700;
+    color: #1a1a2e;
 }
 
 .loading {
@@ -265,6 +302,16 @@ header h2 {
     gap: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.squad-player .club-badge {
+    width: 20px;
+    height: 20px;
+}
+
+.squad-player .badge-fallback {
+    font-size: 1rem;
+    width: 20px;
 }
 
 .squad-player:hover {
