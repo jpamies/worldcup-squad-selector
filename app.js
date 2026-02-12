@@ -17,7 +17,7 @@ const FLAG_CODE_MAP = {
     'ARG': 'ar', 'POR': 'pt', 'ITA': 'it', 'NED': 'nl', 'BEL': 'be',
     'CRO': 'hr', 'URU': 'uy', 'COL': 'co', 'DEN': 'dk', 'USA': 'us',
     'MAR': 'ma', 'EGY': 'eg', 'SEN': 'sn', 'JPN': 'jp', 'QAT': 'qa',
-    'MEX': 'mx', 'SUI': 'ch'
+    'MEX': 'mx', 'SUI': 'ch', 'TUR': 'tr'
 };
 
 // Get flag image HTML from country code
@@ -58,7 +58,8 @@ const COUNTRIES = [
     { code: 'japan', name: 'Japan', fifa: 'JPN' },
     { code: 'qatar', name: 'Qatar', fifa: 'QAT' },
     { code: 'mexico', name: 'Mexico', fifa: 'MEX' },
-    { code: 'switzerland', name: 'Switzerland', fifa: 'SUI' }
+    { code: 'switzerland', name: 'Switzerland', fifa: 'SUI' },
+    { code: 'turkey', name: 'Turkey', fifa: 'TUR' }
 ];
 
 // Available countries (from Transfermarkt)

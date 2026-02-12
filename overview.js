@@ -7,7 +7,7 @@ const FLAG_CODE_MAP = {
     'ARG': 'ar', 'POR': 'pt', 'ITA': 'it', 'NED': 'nl', 'BEL': 'be',
     'CRO': 'hr', 'URU': 'uy', 'COL': 'co', 'DEN': 'dk', 'USA': 'us',
     'MAR': 'ma', 'EGY': 'eg', 'SEN': 'sn', 'JPN': 'jp', 'QAT': 'qa',
-    'MEX': 'mx', 'SUI': 'ch'
+    'MEX': 'mx', 'SUI': 'ch', 'TUR': 'tr'
 };
 
 // All available countries
@@ -33,7 +33,8 @@ const COUNTRIES = [
     { code: 'japan', name: 'Japan', nameLocal: '日本', fifa: 'JPN' },
     { code: 'qatar', name: 'Qatar', nameLocal: 'قطر', fifa: 'QAT' },
     { code: 'mexico', name: 'Mexico', nameLocal: 'México', fifa: 'MEX' },
-    { code: 'switzerland', name: 'Switzerland', nameLocal: 'Schweiz', fifa: 'SUI' }
+    { code: 'switzerland', name: 'Switzerland', nameLocal: 'Schweiz', fifa: 'SUI' },
+    { code: 'turkey', name: 'Turkey', nameLocal: 'Türkiye', fifa: 'TUR' }
 ];
 
 // Pending import data (stored when user needs to choose import method)

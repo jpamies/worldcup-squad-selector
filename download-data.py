@@ -42,6 +42,7 @@ COUNTRIES = {
     'qatar': {'id': 137, 'flag': '\U0001F1F6\U0001F1E6', 'name': 'Qatar', 'nameLocal': 'قطر', 'code': 'QAT', 'confederation': 'AFC'},
     'mexico': {'id': 110, 'flag': '\U0001F1F2\U0001F1FD', 'name': 'Mexico', 'nameLocal': 'México', 'code': 'MEX', 'confederation': 'CONCACAF'},
     'switzerland': {'id': 148, 'flag': '\U0001F1E8\U0001F1ED', 'name': 'Switzerland', 'nameLocal': 'Schweiz', 'code': 'SUI', 'confederation': 'UEFA'},
+    'turkey': {'id': 174, 'flag': '\U0001F1F9\U0001F1F7', 'name': 'Turkey', 'nameLocal': 'Türkiye', 'code': 'TUR', 'confederation': 'UEFA'},
 }
 
 # Position mapping
