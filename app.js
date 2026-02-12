@@ -251,8 +251,31 @@ function renderCountryInfo() {
     `;
 }
 
+// Update profile indicator in UI
+function updateProfileIndicator() {
+    const nameEl = document.getElementById('current-profile-name');
+    if (nameEl) {
+        const profiles = ProfileManager.getProfiles();
+        const currentId = ProfileManager.getCurrentProfileId();
+        const profile = profiles.find(p => p.id === currentId);
+        nameEl.textContent = profile ? profile.name : 'Mi Mundial';
+    }
+}
+
 // Initialize the app
 async function init() {
+    // Initialize profile system
+    ProfileManager.initProfiles();
+    updateProfileIndicator();
+    
+    // Click on profile indicator goes to overview
+    const indicator = document.getElementById('profile-indicator');
+    if (indicator) {
+        indicator.addEventListener('click', () => {
+            window.location.href = 'overview.html';
+        });
+    }
+    
     // Check URL for country parameter
     const urlParams = new URLSearchParams(window.location.search);
     const countryParam = urlParams.get('country');
@@ -450,7 +473,7 @@ function renderSquad() {
     });
 }
 
-// Save squad to localStorage
+// Save squad to localStorage (uses ProfileManager)
 function saveSquad() {
     if (selectedPlayers.length === 0) {
         showToast('Please select at least one player!', true);
@@ -463,16 +486,15 @@ function saveSquad() {
         savedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(`wc2026_squad_${currentCountry}`, JSON.stringify(squadData));
+    ProfileManager.saveSquad(currentCountry, squadData);
     showToast(`Squad saved! (${selectedPlayers.length} players)`);
 }
 
-// Load saved squad from localStorage
+// Load saved squad from localStorage (uses ProfileManager)
 function loadSavedSquad() {
-    const saved = localStorage.getItem(`wc2026_squad_${currentCountry}`);
+    const saved = ProfileManager.getSquad(currentCountry);
     if (saved) {
-        const data = JSON.parse(saved);
-        selectedPlayers = data.players || [];
+        selectedPlayers = saved.players || [];
     } else {
         selectedPlayers = [];
     }

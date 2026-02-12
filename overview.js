@@ -1,4 +1,5 @@
 // Overview page - Shows all teams with their squads
+// Uses ProfileManager for profile management
 
 // FIFA code to ISO 2-letter code mapping for flag images
 const FLAG_CODE_MAP = {
@@ -35,6 +36,9 @@ const COUNTRIES = [
     { code: 'switzerland', name: 'Switzerland', nameLocal: 'Schweiz', fifa: 'SUI' }
 ];
 
+// Pending import data (stored when user needs to choose import method)
+let pendingImportData = null;
+
 // Format market value
 function formatMarketValue(value) {
     if (!value || value === 0) return '€0';
@@ -50,17 +54,9 @@ function formatMarketValue(value) {
     return `€${value}`;
 }
 
-// Get saved squad for a country
+// Get saved squad for a country (uses ProfileManager)
 function getSavedSquad(countryCode) {
-    const saved = localStorage.getItem(`wc2026_squad_${countryCode}`);
-    if (saved) {
-        try {
-            return JSON.parse(saved);
-        } catch (e) {
-            return null;
-        }
-    }
-    return null;
+    return ProfileManager.getSquad(countryCode);
 }
 
 // Calculate squad stats
@@ -192,6 +188,146 @@ function showToast(message, isError = false) {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// ============ Profile Management UI ============
+
+// Render profile dropdown
+function renderProfileDropdown() {
+    const profiles = ProfileManager.getProfiles();
+    const currentId = ProfileManager.getCurrentProfileId();
+    const select = document.getElementById('profile-select');
+    
+    select.innerHTML = Object.values(profiles).map(p => 
+        `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+    
+    // Disable delete button for default profile
+    const deleteBtn = document.getElementById('delete-profile-btn');
+    if (deleteBtn) {
+        deleteBtn.disabled = currentId === ProfileManager.DEFAULT_PROFILE_ID;
+        deleteBtn.style.opacity = currentId === ProfileManager.DEFAULT_PROFILE_ID ? '0.5' : '1';
+    }
+}
+
+// Switch to a different profile
+function switchProfile(profileId) {
+    ProfileManager.setCurrentProfile(profileId);
+    refreshPage();
+    showToast(`Cambiado a: ${ProfileManager.getCurrentProfile().name}`);
+}
+
+// Refresh all page content
+function refreshPage() {
+    renderProfileDropdown();
+    renderTeamCards();
+    renderSummary();
+    updateShareButtonState();
+}
+
+// Render all team cards
+function renderTeamCards() {
+    const grid = document.getElementById('teams-grid');
+    grid.innerHTML = COUNTRIES.map(renderTeamCard).join('');
+}
+
+// Update share button state
+function updateShareButtonState() {
+    const shareBtn = document.getElementById('share-all-btn');
+    const hasAnySquad = COUNTRIES.some(c => {
+        const squad = getSavedSquad(c.code);
+        return squad && squad.players && squad.players.length > 0;
+    });
+    shareBtn.disabled = !hasAnySquad;
+}
+
+// Modal helpers
+function hideModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+}
+
+function showCreateModal() {
+    document.getElementById('new-profile-name').value = '';
+    document.getElementById('create-modal').classList.remove('hidden');
+    document.getElementById('new-profile-name').focus();
+}
+
+function showRenameModal() {
+    const currentProfile = ProfileManager.getCurrentProfile();
+    document.getElementById('rename-profile-name').value = currentProfile.name;
+    document.getElementById('rename-modal').classList.remove('hidden');
+    document.getElementById('rename-profile-name').focus();
+}
+
+function showDeleteModal() {
+    if (ProfileManager.getCurrentProfileId() === ProfileManager.DEFAULT_PROFILE_ID) {
+        showToast('No puedes eliminar el mundial por defecto', true);
+        return;
+    }
+    document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function showImportModal() {
+    document.getElementById('import-modal').classList.remove('hidden');
+}
+
+// Create new profile
+function createNewProfile() {
+    const name = document.getElementById('new-profile-name').value.trim();
+    if (!name) {
+        showToast('Introduce un nombre', true);
+        return;
+    }
+    
+    ProfileManager.createProfile(name, true);
+    hideModals();
+    refreshPage();
+    showToast(`Creado: ${name}`);
+}
+
+// Rename current profile
+function renameCurrentProfile() {
+    const name = document.getElementById('rename-profile-name').value.trim();
+    if (!name) {
+        showToast('Introduce un nombre', true);
+        return;
+    }
+    
+    ProfileManager.renameProfile(ProfileManager.getCurrentProfileId(), name);
+    hideModals();
+    refreshPage();
+    showToast(`Renombrado a: ${name}`);
+}
+
+// Delete current profile
+function deleteCurrentProfile() {
+    const currentProfile = ProfileManager.getCurrentProfile();
+    if (ProfileManager.deleteProfile(ProfileManager.getCurrentProfileId())) {
+        hideModals();
+        refreshPage();
+        showToast(`Eliminado: ${currentProfile.name}`);
+    } else {
+        showToast('No se pudo eliminar', true);
+    }
+}
+
+// Duplicate current profile
+function duplicateCurrentProfile() {
+    const currentProfile = ProfileManager.getCurrentProfile();
+    const newId = ProfileManager.duplicateProfile(
+        ProfileManager.getCurrentProfileId(),
+        `${currentProfile.name} (copia)`
+    );
+    
+    if (newId) {
+        ProfileManager.setCurrentProfile(newId);
+        refreshPage();
+        showToast(`Duplicado: ${currentProfile.name}`);
+    } else {
+        showToast('Error al duplicar', true);
+    }
+}
+
+// ============ Sharing ============
+
 // Generate compact share data for all squads
 // Format: ESP:1,2,3|FRA:4,5,6|GER:7,8,9
 function generateShareData() {
@@ -254,89 +390,153 @@ function fallbackCopy(text) {
     document.body.removeChild(textArea);
 }
 
-// Load squads from URL parameter (async - fetches player data from JSON files)
-async function loadFromURL() {
+// ============ Import ============
+
+// Check for shared data in URL
+function checkForSharedData() {
     const params = new URLSearchParams(window.location.search);
     const dataParam = params.get('data');
     
     if (!dataParam) return false;
     
     try {
+        // Validate data
         const decoded = atob(dataParam);
         const parts = decoded.split('|');
         
-        let loadedCount = 0;
+        if (parts.length === 0) return false;
         
-        // Process each country
-        for (const part of parts) {
-            const [fifaCode, idsStr] = part.split(':');
-            if (!fifaCode || !idsStr) continue;
-            
-            const country = COUNTRIES.find(c => c.fifa === fifaCode);
-            if (!country) continue;
-            
-            const ids = idsStr.split(',').map(id => parseInt(id, 10));
-            
-            try {
-                // Fetch the country's player data
-                const response = await fetch(`data/${country.code}.json`);
-                if (!response.ok) continue;
-                
-                const data = await response.json();
-                
-                // Find the actual players by ID
-                const players = ids
-                    .map(id => data.players.find(p => p.id === id))
-                    .filter(p => p !== undefined);
-                
-                if (players.length > 0) {
-                    const squadData = {
-                        country: country.code,
-                        players: players,
-                        savedAt: new Date().toISOString()
-                    };
-                    
-                    localStorage.setItem(`wc2026_squad_${country.code}`, JSON.stringify(squadData));
-                    loadedCount++;
-                }
-            } catch (e) {
-                console.error(`Error loading data for ${country.code}:`, e);
-            }
-        }
-        
-        // Clear URL parameter
-        window.history.replaceState({}, '', window.location.pathname);
-        
-        if (loadedCount > 0) {
-            showToast(`¡${loadedCount} selecciones cargadas!`);
-        }
-        return loadedCount > 0;
+        // Store pending import data and show modal
+        pendingImportData = { decoded, parts };
+        showImportModal();
+        return true;
     } catch (e) {
-        console.error('Error loading from URL:', e);
-        showToast('Error al cargar datos compartidos', true);
+        console.error('Error parsing shared data:', e);
         return false;
     }
 }
 
-// Initialize page
+// Import as new profile
+async function importAsNew() {
+    if (!pendingImportData) {
+        hideModals();
+        return;
+    }
+    
+    // Create new profile
+    const newId = ProfileManager.createProfile('Mundial importado', true);
+    
+    // Import data
+    await importDataToCurrentProfile();
+    
+    hideModals();
+    refreshPage();
+}
+
+// Import to current profile (overwrite)
+async function importToCurrentProfile() {
+    if (!pendingImportData) {
+        hideModals();
+        return;
+    }
+    
+    await importDataToCurrentProfile();
+    
+    hideModals();
+    refreshPage();
+}
+
+// Actually import the data
+async function importDataToCurrentProfile() {
+    if (!pendingImportData) return;
+    
+    const { parts } = pendingImportData;
+    let loadedCount = 0;
+    
+    // Process each country
+    for (const part of parts) {
+        const [fifaCode, idsStr] = part.split(':');
+        if (!fifaCode || !idsStr) continue;
+        
+        const country = COUNTRIES.find(c => c.fifa === fifaCode);
+        if (!country) continue;
+        
+        const ids = idsStr.split(',').map(id => parseInt(id, 10));
+        
+        try {
+            // Fetch the country's player data
+            const response = await fetch(`data/${country.code}.json`);
+            if (!response.ok) continue;
+            
+            const data = await response.json();
+            
+            // Find the actual players by ID
+            const players = ids
+                .map(id => data.players.find(p => p.id === id))
+                .filter(p => p !== undefined);
+            
+            if (players.length > 0) {
+                const squadData = {
+                    country: country.code,
+                    players: players,
+                    savedAt: new Date().toISOString()
+                };
+                
+                ProfileManager.saveSquad(country.code, squadData);
+                loadedCount++;
+            }
+        } catch (e) {
+            console.error(`Error loading data for ${country.code}:`, e);
+        }
+    }
+    
+    // Clear URL parameter and pending data
+    window.history.replaceState({}, '', window.location.pathname);
+    pendingImportData = null;
+    
+    if (loadedCount > 0) {
+        showToast(`¡${loadedCount} selecciones importadas!`);
+    }
+}
+
+// ============ Initialize ============
+
 async function init() {
-    // Check if loading from shared URL
-    await loadFromURL();
+    // Initialize profile system
+    ProfileManager.initProfiles();
     
-    // Render all team cards
-    const grid = document.getElementById('teams-grid');
-    grid.innerHTML = COUNTRIES.map(renderTeamCard).join('');
+    // Render profile dropdown
+    renderProfileDropdown();
     
-    // Render summary
+    // Check for shared data in URL (shows modal if found)
+    const hasSharedData = checkForSharedData();
+    
+    // Render page content
+    renderTeamCards();
     renderSummary();
+    updateShareButtonState();
     
-    // Update share button state
-    const shareBtn = document.getElementById('share-all-btn');
-    const hasAnySquad = COUNTRIES.some(c => {
-        const squad = getSavedSquad(c.code);
-        return squad && squad.players && squad.players.length > 0;
+    // Close modals when clicking overlay
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                hideModals();
+                // If we're closing import modal without action, clear URL
+                if (overlay.id === 'import-modal' && pendingImportData) {
+                    window.history.replaceState({}, '', window.location.pathname);
+                    pendingImportData = null;
+                }
+            }
+        });
     });
-    shareBtn.disabled = !hasAnySquad;
+    
+    // Handle Enter key in modals
+    document.getElementById('new-profile-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') createNewProfile();
+    });
+    document.getElementById('rename-profile-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') renameCurrentProfile();
+    });
 }
 
 // Start

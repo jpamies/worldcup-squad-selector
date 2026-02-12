@@ -9,7 +9,13 @@
 </head>
 <body>
     <div class="container">
-        <a href="overview.html" class="overview-link">📊 Ver todas las selecciones</a>
+        <div class="top-bar">
+            <a href="overview.html" class="overview-link">📊 Ver todas las selecciones</a>
+            <div class="profile-indicator" id="profile-indicator">
+                <span class="profile-label">📁</span>
+                <span class="profile-name" id="current-profile-name">Mi Mundial</span>
+            </div>
+        </div>
         <header>
             <h1>🏆 World Cup 2026</h1>
             <h2>Squad Selector</h2>
@@ -84,6 +90,7 @@
         </div>
     </div>
 
+    <script src="profiles.js"></script>
     <script src="clubs.js"></script>
     <script src="app.js"></script>
 </body>

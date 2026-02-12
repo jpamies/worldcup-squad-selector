@@ -17,11 +17,17 @@ body {
     padding: 20px;
 }
 
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
 .overview-link {
     display: inline-block;
     color: #ffd700;
     text-decoration: none;
-    margin-bottom: 15px;
     font-size: 0.95rem;
     transition: opacity 0.2s;
 }
@@ -29,6 +35,32 @@ body {
 .overview-link:hover {
     opacity: 0.8;
     text-decoration: underline;
+}
+
+.profile-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-indicator:hover {
+    background: rgba(255, 215, 0, 0.2);
+}
+
+.profile-label {
+    opacity: 0.8;
+}
+
+.profile-name {
+    color: #ffd700;
+    font-weight: 500;
 }
 
 header {

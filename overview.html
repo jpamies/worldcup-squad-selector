@@ -183,6 +183,127 @@
             color: #8892b0;
         }
         
+        /* Profile Selector */
+        .profile-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .profile-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .profile-selector label {
+            font-size: 1rem;
+            color: #8892b0;
+        }
+        
+        .profile-select {
+            padding: 8px 15px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+            background: #1a1a2e;
+            color: #fff;
+            cursor: pointer;
+            min-width: 200px;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .profile-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .profile-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .profile-btn.primary {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #1a1a2e;
+        }
+        
+        .profile-btn.danger {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        .profile-btn.danger:hover {
+            background: rgba(244, 67, 54, 0.4);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.hidden {
+            display: none;
+        }
+        
+        .modal {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 25px;
+            min-width: 350px;
+            border: 2px solid #ffd700;
+        }
+        
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
         .share-actions {
             display: flex;
             justify-content: center;
@@ -256,6 +377,24 @@
             <p>Vista general de todas las selecciones</p>
         </div>
         
+        <!-- Profile Selector -->
+        <div class="profile-section">
+            <div class="profile-header">
+                <div class="profile-selector">
+                    <label>📁 Mundial:</label>
+                    <select class="profile-select" id="profile-select" onchange="switchProfile(this.value)">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-btn primary" onclick="showCreateModal()">➕ Nuevo</button>
+                    <button class="profile-btn" onclick="showRenameModal()">✏️ Renombrar</button>
+                    <button class="profile-btn" onclick="duplicateCurrentProfile()">📄 Duplicar</button>
+                    <button class="profile-btn danger" id="delete-profile-btn" onclick="showDeleteModal()">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="summary-bar" id="summary">
             <!-- Populated by JS -->
         </div>
@@ -271,6 +410,53 @@
         </div>
     </div>
     
+    <!-- Modals -->
+    <div class="modal-overlay hidden" id="create-modal">
+        <div class="modal">
+            <h3>➕ Crear nuevo Mundial</h3>
+            <input type="text" id="new-profile-name" placeholder="Nombre del mundial..." />
+            <div class="modal-actions">
+                <button class="profile-btn" onclick="hideModals()">Cancelar</button>
+                <button class="profile-btn primary" onclick="createNewProfile()">Crear</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay hidden" id="rename-modal">
+        <div class="modal">
+            <h3>✏️ Renombrar Mundial</h3>
+            <input type="text" id="rename-profile-name" placeholder="Nuevo nombre..." />
+            <div class="modal-actions">
+                <button class="profile-btn" onclick="hideModals()">Cancelar</button>
+                <button class="profile-btn primary" onclick="renameCurrentProfile()">Guardar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay hidden" id="delete-modal">
+        <div class="modal">
+            <h3>🗑️ Eliminar Mundial</h3>
+            <p style="color: #f44336; margin-bottom: 15px;">¿Estás seguro? Se borrarán todas las selecciones de este mundial.</p>
+            <div class="modal-actions">
+                <button class="profile-btn" onclick="hideModals()">Cancelar</button>
+                <button class="profile-btn danger" onclick="deleteCurrentProfile()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay hidden" id="import-modal">
+        <div class="modal">
+            <h3>📥 Importar selecciones</h3>
+            <p style="margin-bottom: 15px;">Se han detectado selecciones compartidas. ¿Qué deseas hacer?</p>
+            <div class="modal-actions" style="flex-direction: column; gap: 10px;">
+                <button class="profile-btn primary" onclick="importAsNew()" style="width: 100%;">Crear nuevo mundial</button>
+                <button class="profile-btn" onclick="importToCurrentProfile()" style="width: 100%;">Sobrescribir mundial actual</button>
+                <button class="profile-btn" onclick="hideModals()" style="width: 100%;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="profiles.js"></script>
     <script src="overview.js"></script>
 </body>
 </html>
