@@ -541,3 +541,15 @@ async function init() {
 
 // Start
 document.addEventListener('DOMContentLoaded', init);
+
+// Expose functions to global scope for onclick handlers
+window.hideModals = hideModals;
+window.showCreateModal = showCreateModal;
+window.showRenameModal = showRenameModal;
+window.showDeleteModal = showDeleteModal;
+window.createNewProfile = createNewProfile;
+window.renameCurrentProfile = renameCurrentProfile;
+window.deleteCurrentProfile = deleteCurrentProfile;
+window.importAsNew = importAsNew;
+window.importToCurrentProfile = importToCurrentProfile;
+window.shareAllSquads = shareAllSquads;
