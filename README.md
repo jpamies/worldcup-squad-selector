@@ -29,13 +29,33 @@ A static web application to select your dream squad for the FIFA World Cup 2026.
 
 ```
 world-cup-list/
-├── index.html        # Main HTML page
-├── styles.css        # Styling
-├── app.js            # Application logic
-├── README.md         # This file
+├── index.html          # Main HTML page
+├── styles.css          # Styling
+├── app.js              # Application logic
+├── download-data.py    # Script to download player data
+├── README.md           # This file
 └── data/
-    └── spain.json    # Player data for Spain
+    └── spain.json      # Player data for Spain
 ```
+
+## Downloading Player Data
+
+Use the Python script to download player data from Transfermarkt:
+
+```bash
+# Download data for a specific country
+python download-data.py spain
+
+# Download data for all countries
+python download-data.py --all
+
+# Show help
+python download-data.py --help
+```
+
+### Available Countries
+
+- spain, france, germany, england, brazil, argentina, portugal, italy, netherlands, belgium
 
 ## Player Data Format
 

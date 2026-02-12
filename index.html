@@ -4,29 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Cup 2026 Squad Selector</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        <a href="overview.html" class="overview-link">📊 Ver todas las selecciones</a>
         <header>
             <h1>🏆 World Cup 2026</h1>
             <h2>Squad Selector</h2>
         </header>
 
         <div class="country-selector">
-            <label for="country">Select Country:</label>
-            <select id="country">
-                <option value="spain" selected>🇪🇸 Spain</option>
-                <option value="france">🇫🇷 France</option>
-                <option value="germany">🇩🇪 Germany</option>
-                <option value="england">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option>
-                <option value="brazil">🇧🇷 Brazil</option>
-                <option value="argentina">🇦🇷 Argentina</option>
-                <option value="portugal">🇵🇹 Portugal</option>
-                <option value="italy">🇮🇹 Italy</option>
-                <option value="netherlands">🇳🇱 Netherlands</option>
-                <option value="belgium">🇧🇪 Belgium</option>
-            </select>
+            <label>Select Country:</label>
+            <div class="custom-select" id="country-dropdown">
+                <div class="select-selected" id="country-selected">
+                    <img class="select-flag" src="https://flagcdn.com/w20/es.png" alt="Spain">
+                    <span>Spain</span>
+                </div>
+                <div class="select-items select-hide" id="country-options">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <input type="hidden" id="country" value="spain">
         </div>
 
         <div id="country-info" class="country-info">
@@ -35,6 +35,10 @@
 
         <div class="squad-info">
             <span id="squad-count">0</span>/26 jugadores seleccionados
+            <span class="squad-stats">
+                <span id="squad-value">💰 €0</span>
+                <span id="squad-avg-age">📊 Edad media: -</span>
+            </span>
         </div>
 
         <main class="squad-builder">
@@ -81,7 +85,6 @@
     </div>
 
     <script src="clubs.js"></script>
-    <script src="transfermarkt-service.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

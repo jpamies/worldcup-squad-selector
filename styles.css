@@ -17,6 +17,20 @@ body {
     padding: 20px;
 }
 
+.overview-link {
+    display: inline-block;
+    color: #ffd700;
+    text-decoration: none;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+
+.overview-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
 header {
     text-align: center;
     margin-bottom: 30px;
@@ -39,11 +53,83 @@ header h2 {
 .country-selector {
     text-align: center;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 .country-selector label {
     margin-right: 10px;
     font-size: 1.1rem;
+}
+
+/* Custom select dropdown */
+.custom-select {
+    position: relative;
+    width: 250px;
+}
+
+.select-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid #ffd700;
+    background: #1a1a2e;
+    color: #fff;
+    cursor: pointer;
+}
+
+.select-selected::after {
+    content: "▼";
+    position: absolute;
+    right: 15px;
+    font-size: 0.7rem;
+    color: #ffd700;
+}
+
+.select-selected.select-arrow-active::after {
+    content: "▲";
+}
+
+.select-flag {
+    width: 24px;
+    height: 16px;
+    border-radius: 2px;
+}
+
+.select-items {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background: #1a1a2e;
+    border: 2px solid #ffd700;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.select-items div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.select-items div:hover {
+    background: rgba(255, 215, 0, 0.2);
+}
+
+.select-hide {
+    display: none;
 }
 
 .country-selector select {
@@ -69,8 +155,15 @@ header h2 {
 }
 
 .country-flag {
-    font-size: 4rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.country-flag img {
+    width: 80px;
+    height: 54px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .country-details h2 {
@@ -101,6 +194,33 @@ header h2 {
     background: rgba(255, 215, 0, 0.1);
     border-radius: 10px;
     border: 1px solid rgba(255, 215, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.squad-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 1rem;
+    color: #8892b0;
+}
+
+.squad-stats span {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.player-flag {
+    width: 20px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 #squad-count {
@@ -217,6 +337,21 @@ header h2 {
 .club-badge {
     width: 28px;
     height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Club logo from JSON */
+.club-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.club-logo-small {
+    width: 20px;
+    height: 20px;
     object-fit: contain;
     flex-shrink: 0;
 }

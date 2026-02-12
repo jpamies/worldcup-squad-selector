@@ -11,6 +11,21 @@ const MAX_SQUAD_SIZE = 26;
 const MAX_GOALKEEPERS = 3;
 const MAX_OUTFIELD_PLAYERS = 23; // DEF + MID + FWD
 
+// FIFA code to ISO 2-letter code mapping for flag images
+const FLAG_CODE_MAP = {
+    'ESP': 'es', 'FRA': 'fr', 'GER': 'de', 'ENG': 'gb-eng', 'BRA': 'br',
+    'ARG': 'ar', 'POR': 'pt', 'ITA': 'it', 'NED': 'nl', 'BEL': 'be',
+    'CRO': 'hr', 'URU': 'uy', 'COL': 'co', 'DEN': 'dk', 'USA': 'us',
+    'MAR': 'ma', 'EGY': 'eg', 'SEN': 'sn', 'JPN': 'jp', 'QAT': 'qa',
+    'MEX': 'mx', 'SUI': 'ch'
+};
+
+// Get flag image HTML from country code
+function getFlagHtml(countryCode, size = 20) {
+    const iso2 = FLAG_CODE_MAP[countryCode] || countryCode.toLowerCase().substring(0, 2);
+    return `<img class="player-flag" src="https://flagcdn.com/w${size}/${iso2}.png" alt="${countryCode}" onerror="this.style.display='none'">`;
+}
+
 // DOM Elements
 const availablePlayersContainer = document.getElementById('available-players');
 const squadCountElement = document.getElementById('squad-count');
@@ -20,59 +35,131 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 const clearSquadBtn = document.getElementById('clear-squad');
 const saveSquadBtn = document.getElementById('save-squad');
 
+// Country list for dropdown
+const COUNTRIES = [
+    { code: 'spain', name: 'Spain', fifa: 'ESP' },
+    { code: 'france', name: 'France', fifa: 'FRA' },
+    { code: 'germany', name: 'Germany', fifa: 'GER' },
+    { code: 'england', name: 'England', fifa: 'ENG' },
+    { code: 'brazil', name: 'Brazil', fifa: 'BRA' },
+    { code: 'argentina', name: 'Argentina', fifa: 'ARG' },
+    { code: 'portugal', name: 'Portugal', fifa: 'POR' },
+    { code: 'italy', name: 'Italy', fifa: 'ITA' },
+    { code: 'netherlands', name: 'Netherlands', fifa: 'NED' },
+    { code: 'belgium', name: 'Belgium', fifa: 'BEL' },
+    { code: 'croatia', name: 'Croatia', fifa: 'CRO' },
+    { code: 'uruguay', name: 'Uruguay', fifa: 'URU' },
+    { code: 'colombia', name: 'Colombia', fifa: 'COL' },
+    { code: 'denmark', name: 'Denmark', fifa: 'DEN' },
+    { code: 'usa', name: 'USA', fifa: 'USA' },
+    { code: 'morocco', name: 'Morocco', fifa: 'MAR' },
+    { code: 'egypt', name: 'Egypt', fifa: 'EGY' },
+    { code: 'senegal', name: 'Senegal', fifa: 'SEN' },
+    { code: 'japan', name: 'Japan', fifa: 'JPN' },
+    { code: 'qatar', name: 'Qatar', fifa: 'QAT' },
+    { code: 'mexico', name: 'Mexico', fifa: 'MEX' },
+    { code: 'switzerland', name: 'Switzerland', fifa: 'SUI' }
+];
+
 // Available countries (from Transfermarkt)
 const availableCountries = ['spain', 'france', 'germany', 'england', 'brazil', 'argentina', 'portugal', 'italy', 'netherlands', 'belgium'];
+
+// Initialize custom country dropdown
+function initCountryDropdown() {
+    const optionsContainer = document.getElementById('country-options');
+    const selectedContainer = document.getElementById('country-selected');
+    
+    // Populate options
+    optionsContainer.innerHTML = COUNTRIES.map(c => `
+        <div data-value="${c.code}">
+            <img class="select-flag" src="https://flagcdn.com/w20/${FLAG_CODE_MAP[c.fifa]}.png" alt="${c.name}">
+            <span>${c.name}</span>
+        </div>
+    `).join('');
+    
+    // Update selected display for current country
+    function updateSelected(code) {
+        const country = COUNTRIES.find(c => c.code === code);
+        if (country) {
+            selectedContainer.innerHTML = `
+                <img class="select-flag" src="https://flagcdn.com/w20/${FLAG_CODE_MAP[country.fifa]}.png" alt="${country.name}">
+                <span>${country.name}</span>
+            `;
+        }
+    }
+    
+    // Toggle dropdown
+    selectedContainer.addEventListener('click', function(e) {
+        e.stopPropagation();
+        optionsContainer.classList.toggle('select-hide');
+        this.classList.toggle('select-arrow-active');
+    });
+    
+    // Handle option selection
+    optionsContainer.addEventListener('click', async function(e) {
+        const option = e.target.closest('[data-value]');
+        if (option) {
+            const value = option.dataset.value;
+            countrySelect.value = value;
+            currentCountry = value;
+            updateSelected(value);
+            optionsContainer.classList.add('select-hide');
+            selectedContainer.classList.remove('select-arrow-active');
+            
+            await loadCountryData(currentCountry);
+            loadSavedSquad();
+            renderCountryInfo();
+            renderAvailablePlayers();
+            renderSquad();
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function() {
+        optionsContainer.classList.add('select-hide');
+        selectedContainer.classList.remove('select-arrow-active');
+    });
+    
+    updateSelected(currentCountry);
+}
 
 // Track if still loading more players
 let isLoadingMore = false;
 
-// Load country data from Transfermarkt (Progressive with infinite scroll)
+// Load country data from JSON file
 async function loadCountryData(countryCode) {
-    // If already have cached complete data, use it
-    if (playersData[countryCode] && playersData[countryCode].isComplete) {
+    // If already have cached data, use it
+    if (playersData[countryCode]) {
         return playersData[countryCode];
     }
     
     try {
         isLoading = true;
-        isLoadingMore = true;
-        showLoading(true, 'Connecting to Transfermarkt...');
+        showLoading(true, 'Loading player data...');
         
-        // Use Transfermarkt service with initial page loading
-        const data = await window.TransfermarktService.loadInitialPages(
-            countryCode,
-            // Progress callback
-            (current, total, message) => {
-                updateLoadingIndicator(current, total, message);
-            },
-            // Players loaded callback - renders progressively
-            (players, isComplete, currentPage, totalPages) => {
-                // Update data progressively
-                playersData[countryCode] = {
-                    country: window.TransfermarktService.COUNTRY_IDS[countryCode],
-                    players: players,
-                    isComplete: isComplete,
-                    currentPage: currentPage,
-                    totalPages: totalPages
-                };
-                
-                // Render immediately
-                renderCountryInfo();
-                renderAvailablePlayers();
-                
-                isLoadingMore = !isComplete;
-                if (!isComplete) {
-                    showScrollIndicator(currentPage, totalPages);
-                } else {
-                    hideLoadingIndicator();
-                }
-            }
-        );
+        // Load from JSON file
+        const response = await fetch(`data/${countryCode}.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to load data for ${countryCode}`);
+        }
         
-        playersData[countryCode] = data;
-        return data;
+        const data = await response.json();
+        
+        playersData[countryCode] = {
+            country: data.country,
+            players: data.players,
+            isComplete: true,
+            currentPage: 1,
+            totalPages: 1
+        };
+        
+        renderCountryInfo();
+        renderAvailablePlayers();
+        hideLoadingIndicator();
+        
+        return playersData[countryCode];
     } catch (error) {
-        console.error('Error loading country data from Transfermarkt:', error);
+        console.error('Error loading country data:', error);
         showToast(`Error loading player data for ${countryCode}`, true);
         return null;
     } finally {
@@ -81,53 +168,9 @@ async function loadCountryData(countryCode) {
     }
 }
 
-// Load more players on scroll
-async function loadMorePlayers() {
-    if (!window.TransfermarktService.hasMorePages(currentCountry)) {
-        return;
-    }
-    
-    if (window.TransfermarktService.isCurrentlyLoading(currentCountry)) {
-        return;
-    }
-    
-    showScrollIndicator();
-    
-    await window.TransfermarktService.loadNextPage(
-        currentCountry,
-        (players, isComplete, currentPage, totalPages) => {
-            playersData[currentCountry].players = players;
-            playersData[currentCountry].isComplete = isComplete;
-            playersData[currentCountry].currentPage = currentPage;
-            
-            renderCountryInfo();
-            renderAvailablePlayers();
-            
-            if (isComplete) {
-                hideScrollIndicator();
-            } else {
-                showScrollIndicator(currentPage, totalPages);
-            }
-        }
-    );
-}
-
-// Show scroll indicator at bottom
+// Show scroll indicator at bottom (no longer used with JSON data)
 function showScrollIndicator(currentPage, totalPages) {
-    let indicator = document.getElementById('scroll-indicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'scroll-indicator';
-        indicator.className = 'scroll-indicator';
-        availablePlayersContainer.parentElement.appendChild(indicator);
-    }
-    
-    if (currentPage && totalPages) {
-        indicator.innerHTML = `<span class="loading-spinner"></span> Scroll para cargar más (${currentPage}/${totalPages} páginas)`;
-    } else {
-        indicator.innerHTML = `<span class="loading-spinner"></span> Cargando más jugadores...`;
-    }
-    indicator.style.display = 'flex';
+    // Not needed with JSON data
 }
 
 // Hide scroll indicator
@@ -138,20 +181,9 @@ function hideScrollIndicator() {
     }
 }
 
-// Setup infinite scroll
+// Setup infinite scroll (disabled with JSON data)
 function setupInfiniteScroll() {
-    const container = availablePlayersContainer;
-    
-    container.addEventListener('scroll', () => {
-        // Check if near bottom (within 200px)
-        const scrollTop = container.scrollTop;
-        const scrollHeight = container.scrollHeight;
-        const clientHeight = container.clientHeight;
-        
-        if (scrollTop + clientHeight >= scrollHeight - 200) {
-            loadMorePlayers();
-        }
-    });
+    // Not needed with JSON data - all players loaded at once
 }
 
 // Update loading indicator (shows progress while data is visible)
@@ -207,7 +239,7 @@ function renderCountryInfo() {
     const pagesInfo = countryData.isComplete ? '' : ` (página ${currentPage}/${totalPages})`;
     
     countryInfoElement.innerHTML = `
-        <div class="country-flag">${country.flag || '🏳️'}</div>
+        <div class="country-flag">${getFlagHtml(country.code, 80)}</div>
         <div class="country-details">
             <h2>${country.nameLocal || country.name || currentCountry}</h2>
             <div class="country-meta">
@@ -221,6 +253,17 @@ function renderCountryInfo() {
 
 // Initialize the app
 async function init() {
+    // Check URL for country parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const countryParam = urlParams.get('country');
+    if (countryParam && COUNTRIES.find(c => c.code === countryParam)) {
+        currentCountry = countryParam;
+        countrySelect.value = countryParam;
+    }
+    
+    // Initialize custom country dropdown
+    initCountryDropdown();
+    
     // Esperar a que se carguen los badges
     await waitForBadges();
     
@@ -253,13 +296,12 @@ function setupEventListeners() {
         });
     });
 
-    // Country selector
+    // Country selector (fallback for hidden input)
     countrySelect.addEventListener('change', async (e) => {
         currentCountry = e.target.value;
-        selectedPlayers = [];
         await loadCountryData(currentCountry);
-        renderCountryInfo();
         loadSavedSquad();
+        renderCountryInfo();
         renderAvailablePlayers();
         renderSquad();
     });
@@ -294,17 +336,20 @@ function renderAvailablePlayers() {
 
     availablePlayersContainer.innerHTML = filteredPlayers.map(player => {
         const isSelected = selectedPlayers.some(p => p.id === player.id);
-        const photoHtml = player.photoUrl 
-            ? `<img class="player-photo" src="${player.photoUrl}" alt="${player.name}" onerror="this.style.display='none'">`
+        const photoHtml = player.photo 
+            ? `<img class="player-photo" src="${player.photo}" alt="${player.name}" onerror="this.style.display='none'">`
+            : '';
+        const clubLogoHtml = player.clubLogo
+            ? `<img class="club-logo" src="${player.clubLogo}" alt="${player.club}" onerror="this.style.display='none'">`
             : '';
         return `
             <div class="player-card ${isSelected ? 'selected' : ''}" 
                  data-id="${player.id}" 
                  onclick="togglePlayer(${player.id})">
                 ${photoHtml}
-                ${renderClubBadge(player.club)}
+                ${clubLogoHtml}
                 <div class="player-main">
-                    <span class="name">${player.name}</span>
+                    <span class="name">${getFlagHtml(countryData.country.code)} ${player.name}</span>
                     <span class="club-name">${player.club}</span>
                     <span class="detailed-position">${player.detailedPosition || ''}</span>
                 </div>
@@ -367,6 +412,15 @@ function renderSquad() {
     // Update squad count
     squadCountElement.textContent = selectedPlayers.length;
 
+    // Update squad stats (value and average age)
+    const totalValue = selectedPlayers.reduce((sum, p) => sum + (p.marketValue || 0), 0);
+    const avgAge = selectedPlayers.length > 0 
+        ? (selectedPlayers.reduce((sum, p) => sum + (p.age || 0), 0) / selectedPlayers.length).toFixed(1)
+        : '-';
+    
+    document.getElementById('squad-value').textContent = `💰 ${formatMarketValue(totalValue)}`;
+    document.getElementById('squad-avg-age').textContent = `📊 Edad media: ${avgAge}`;
+
     // Render each position group
     const positions = ['GK', 'DEF', 'MID', 'FWD'];
     positions.forEach(pos => {
@@ -381,13 +435,18 @@ function renderSquad() {
             countElement.textContent = `(${positionPlayers.length})`;
         }
         
-        container.innerHTML = positionPlayers.map(player => `
+        container.innerHTML = positionPlayers.map(player => {
+            const clubLogoHtml = player.clubLogo
+                ? `<img class="club-logo-small" src="${player.clubLogo}" alt="${player.club}" onerror="this.style.display='none'">`
+                : '';
+            return `
             <div class="squad-player" onclick="togglePlayer(${player.id})">
-                ${renderClubBadge(player.club)}
+                ${clubLogoHtml}
                 <span>${player.name}</span>
                 <span class="remove">×</span>
             </div>
-        `).join('');
+        `;
+        }).join('');
     });
 }
 
@@ -414,6 +473,8 @@ function loadSavedSquad() {
     if (saved) {
         const data = JSON.parse(saved);
         selectedPlayers = data.players || [];
+    } else {
+        selectedPlayers = [];
     }
 }
 
