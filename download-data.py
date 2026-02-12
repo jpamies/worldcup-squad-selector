@@ -30,7 +30,7 @@ COUNTRIES = {
     'netherlands': {'id': 122, 'flag': '\U0001F1F3\U0001F1F1', 'name': 'Netherlands', 'nameLocal': 'Nederland', 'code': 'NED', 'confederation': 'UEFA'},
     'belgium': {'id': 19, 'flag': '\U0001F1E7\U0001F1EA', 'name': 'Belgium', 'nameLocal': 'Belgie', 'code': 'BEL', 'confederation': 'UEFA'},
     'croatia': {'id': 56, 'flag': '\U0001F1ED\U0001F1F7', 'name': 'Croatia', 'nameLocal': 'Hrvatska', 'code': 'CRO', 'confederation': 'UEFA'},
-    'uruguay': {'id': 174, 'flag': '\U0001F1FA\U0001F1FE', 'name': 'Uruguay', 'nameLocal': 'Uruguay', 'code': 'URU', 'confederation': 'CONMEBOL'},
+    'uruguay': {'id': 179, 'flag': '\U0001F1FA\U0001F1FE', 'name': 'Uruguay', 'nameLocal': 'Uruguay', 'code': 'URU', 'confederation': 'CONMEBOL'},
     'colombia': {'id': 83, 'flag': '\U0001F1E8\U0001F1F4', 'name': 'Colombia', 'nameLocal': 'Colombia', 'code': 'COL', 'confederation': 'CONMEBOL'},
     'denmark': {'id': 39, 'flag': '\U0001F1E9\U0001F1F0', 'name': 'Denmark', 'nameLocal': 'Danmark', 'code': 'DEN', 'confederation': 'UEFA'},
     'usa': {'id': 184, 'flag': '\U0001F1FA\U0001F1F8', 'name': 'USA', 'nameLocal': 'United States', 'code': 'USA', 'confederation': 'CONCACAF'},
