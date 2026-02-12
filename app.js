@@ -257,7 +257,7 @@ function updateProfileIndicator() {
     if (nameEl) {
         const profiles = ProfileManager.getProfiles();
         const currentId = ProfileManager.getCurrentProfileId();
-        const profile = profiles.find(p => p.id === currentId);
+        const profile = profiles[currentId];
         nameEl.textContent = profile ? profile.name : 'Mi Mundial';
     }
 }
